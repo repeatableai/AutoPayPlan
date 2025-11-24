@@ -44,17 +44,20 @@ export const useUserStore = create<UserState>()(
 
       completeOnboarding: () => set({ isOnboarded: true }),
 
-      resetOnboarding: () => set({
-        isOnboarded: false,
-        isPlanEnrolled: false,
-        goals: [],
-        retirementAge: null,
-        emergencyFundTarget: null,
-        financialFears: [],
-        budgetPriorities: [],
-        debtPayoffPreference: null,
-        dateOfBirth: null,
-      }),
+      resetOnboarding: () => {
+        console.log('🔄 RESETTING ALL ONBOARDING DATA');
+        set({
+          isOnboarded: false,
+          isPlanEnrolled: false,
+          goals: [],
+          retirementAge: null,
+          emergencyFundTarget: null,
+          financialFears: [],
+          budgetPriorities: [],
+          debtPayoffPreference: null,
+          dateOfBirth: null,
+        });
+      },
 
       enrollInPlan: () => set({ isPlanEnrolled: true }),
 

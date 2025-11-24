@@ -11,7 +11,7 @@ import { useUserStore } from '@store/userStore';
 type GoalDetailsScreenNavigationProp = StackNavigationProp<DashboardStackParamList, 'GoalDetails'>;
 type GoalDetailsScreenRouteProp = RouteProp<DashboardStackParamList, 'GoalDetails'>;
 
-type GoalOption = 'Vacation' | 'Downpayment' | 'Large purchase' | '';
+type GoalOption = 'Large purchase' | 'Vacation' | 'Wedding' | 'Education' | 'Down payment' | 'Other' | '';
 
 export const GoalDetailsScreen = () => {
   const navigation = useNavigation<GoalDetailsScreenNavigationProp>();
@@ -21,10 +21,11 @@ export const GoalDetailsScreen = () => {
   const updateGoal = useUserStore((state) => state.updateGoal);
   const goals = useUserStore((state) => state.goals);
 
-  // Debug logging
-  console.log('GoalDetailsScreen - goalType:', goalType);
-  console.log('GoalDetailsScreen - goalId:', goalId);
-  console.log('GoalDetailsScreen - all goals:', goals);
+  // Debug logging - UPDATED 2025-11-24 ALL 6 OPTIONS
+  console.log('GoalDetailsScreen ALL 6 OPTIONS - goalType:', goalType);
+  console.log('GoalDetailsScreen ALL 6 OPTIONS - goalId:', goalId);
+  console.log('GoalDetailsScreen ALL 6 OPTIONS - all goals:', goals);
+  console.log('GoalDetailsScreen ALL 6 OPTIONS - goalOptions:', ['Large purchase', 'Vacation', 'Wedding', 'Education', 'Down payment', 'Other']);
 
   // Find existing goal if editing
   const existingGoal = goalId ? goals.find(g => g.id === goalId) : null;
@@ -33,10 +34,11 @@ export const GoalDetailsScreen = () => {
   // Determine the selected goal option based on existing goal
   const getGoalOption = (goal: typeof existingGoal): GoalOption => {
     if (!goal) return '';
-    if (goal.name === 'Vacation' || goal.name === 'Downpayment') {
-      return goal.name;
+    const validOptions: GoalOption[] = ['Large purchase', 'Vacation', 'Wedding', 'Education', 'Down payment'];
+    if (validOptions.includes(goal.name as GoalOption)) {
+      return goal.name as GoalOption;
     }
-    return 'Large purchase';
+    return 'Other';
   };
 
   // Format date from existing goal
@@ -49,8 +51,9 @@ export const GoalDetailsScreen = () => {
   };
 
   const [selectedGoal, setSelectedGoal] = useState<GoalOption>(getGoalOption(existingGoal));
+  const validOptions: GoalOption[] = ['Large purchase', 'Vacation', 'Wedding', 'Education', 'Down payment'];
   const [customGoalName, setCustomGoalName] = useState(
-    existingGoal && existingGoal.name !== 'Vacation' && existingGoal.name !== 'Downpayment'
+    existingGoal && !validOptions.includes(existingGoal.name as GoalOption)
       ? existingGoal.name
       : ''
   );
@@ -81,17 +84,18 @@ export const GoalDetailsScreen = () => {
   const goalTitle = isShortTerm ? 'Short-term' : 'Long-term';
   const isEditing = !!goalId;
 
-  const goalOptions: GoalOption[] = ['Vacation', 'Downpayment', 'Large purchase'];
+  const goalOptions: GoalOption[] = ['Large purchase', 'Vacation', 'Wedding', 'Education', 'Down payment', 'Other'];
 
   const handleSelectGoal = (goal: GoalOption) => {
     setSelectedGoal(goal);
     setDropdownVisible(false);
-    if (goal !== 'Large purchase') {
+    if (goal !== 'Other') {
       setCustomGoalName('');
     }
   };
 
-  const whyMattersOptions = ['New Couch', 'New TV', 'Downpayment', 'Wedding'];
+  // Use actual user goals for non-negotiable selection
+  const whyMattersOptions = goals.map(g => g.name);
 
   const handleSelectWhyMatter = (option: string) => {
     setSelectedWhyMatter(option);
@@ -111,7 +115,7 @@ export const GoalDetailsScreen = () => {
       return;
     }
 
-    const goalName = selectedGoal === 'Large purchase' && customGoalName
+    const goalName = selectedGoal === 'Other' && customGoalName
       ? customGoalName
       : selectedGoal;
 
@@ -132,9 +136,19 @@ export const GoalDetailsScreen = () => {
       targetDate,
       projectedCompletionDate: targetDate,
       startDate: new Date(),
-      category: selectedGoal === 'Vacation' ? 'vacation' : selectedGoal === 'Downpayment' ? 'home' : 'other' as 'vacation' | 'home' | 'other',
+      category: selectedGoal === 'Education' ? 'education' :
+                selectedGoal === 'Wedding' ? 'wedding' :
+                selectedGoal === 'Vacation' ? 'vacation' :
+                selectedGoal === 'Large purchase' ? 'large-purchase' :
+                selectedGoal === 'Down payment' ? 'down-payment' :
+                'other' as any,
       priority: 'medium' as 'medium',
-      icon: selectedGoal === 'Vacation' ? '✈️' : selectedGoal === 'Downpayment' ? '🏠' : '🎯',
+      icon: selectedGoal === 'Education' ? '🎓' :
+            selectedGoal === 'Wedding' ? '💒' :
+            selectedGoal === 'Vacation' ? '✈️' :
+            selectedGoal === 'Large purchase' ? '🛒' :
+            selectedGoal === 'Down payment' ? '🏡' :
+            '🎯',
       status: 'active' as 'active',
       isOnTrack: true,
       createdAt: new Date(),
@@ -187,23 +201,27 @@ export const GoalDetailsScreen = () => {
 
           {/* Goal Cards */}
           <View style={styles.goalsGrid}>
-            {whyMattersOptions.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={[
-                  styles.goalOptionCard,
-                  selectedWhyMatter === option && styles.goalOptionCardSelected
-                ]}
-                onPress={() => setSelectedWhyMatter(option)}
-              >
-                <View style={styles.goalOptionIconContainer}>
-                  <Text style={styles.goalOptionIcon}>
-                    {option === 'New Couch' ? '🏷️' : option === 'New TV' ? '🏷️' : option === 'Wedding' ? '🧡' : '🏠'}
-                  </Text>
-                </View>
-                <Text style={styles.goalOptionLabel}>{option}</Text>
-              </TouchableOpacity>
-            ))}
+            {goals.length > 0 ? (
+              goals.map((goal) => (
+                <TouchableOpacity
+                  key={goal.id}
+                  style={[
+                    styles.goalOptionCard,
+                    selectedWhyMatter === goal.name && styles.goalOptionCardSelected
+                  ]}
+                  onPress={() => setSelectedWhyMatter(goal.name)}
+                >
+                  <View style={styles.goalOptionIconContainer}>
+                    <Text style={styles.goalOptionIcon}>
+                      {goal.icon || '🎯'}
+                    </Text>
+                  </View>
+                  <Text style={styles.goalOptionLabel}>{goal.name}</Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>No goals added yet.</Text>
+            )}
           </View>
         </ScrollView>
 
@@ -274,8 +292,8 @@ export const GoalDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Conditional Goal Name field for Large purchase */}
-        {selectedGoal === 'Large purchase' && (
+        {/* Conditional Goal Name field for Other */}
+        {selectedGoal === 'Other' && (
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Goal Name</Text>
             <TextInput
@@ -507,6 +525,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1A1A1A',
     textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#636566',
+    textAlign: 'center',
+    padding: 20,
   },
   bottomButtonContainer: {
     padding: 24,

@@ -83,14 +83,24 @@ export const DashboardHomeScreen = () => {
 
               {/* Center text */}
               <SvgText
-                x="70"
+                x="65"
                 y="60"
                 textAnchor="middle"
-                fontSize="32"
+                fontSize="20"
                 fontWeight="700"
                 fill="#1E1E1E"
               >
-                {Math.round(spendingPercentage)}%
+                {Math.round(spendingPercentage)}
+              </SvgText>
+              <SvgText
+                x="83"
+                y="60"
+                textAnchor="start"
+                fontSize="20"
+                fontWeight="700"
+                fill="#1E1E1E"
+              >
+                %
               </SvgText>
               <SvgText
                 x="70"

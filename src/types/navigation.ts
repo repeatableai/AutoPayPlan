@@ -14,7 +14,8 @@ export type OnboardingStackParamList = {
   Benefits: undefined;
   FinancialIndicatorsIntro: undefined;
   GoalsIntro: undefined;
-  GoalEntry: undefined;
+  GoalEntry: { goalType?: 'short-term' | 'long-term' } | undefined;
+  NonNegotiableGoal: undefined;
   RetirementAge: undefined;
   EmergencyFund: undefined;
   FinancialFears: undefined;

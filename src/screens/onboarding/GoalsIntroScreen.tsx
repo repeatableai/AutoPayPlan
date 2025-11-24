@@ -9,14 +9,9 @@ import type { OnboardingStackNavigationProp } from '../../types/navigation';
 export const GoalsIntroScreen = () => {
   const navigation = useNavigation<OnboardingStackNavigationProp>();
 
-  const exampleGoals = [
-    'Emergency Fund',
-    'Buy a Home',
-    'Retirement',
-    'Pay Off Debt',
-    'Vacation',
-    'Education',
-  ];
+  const handleGoalTypeSelection = (goalType: 'short-term' | 'long-term') => {
+    navigation.navigate('GoalEntry', { goalType });
+  };
 
   return (
     <Screen scrollable={false}>
@@ -24,8 +19,8 @@ export const GoalsIntroScreen = () => {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Financial Goals</Text>
-          <Text style={styles.subtitle}>What do you want to achieve?</Text>
+          <Text style={styles.title}>What Goals Are You Saving For?</Text>
+          <Text style={styles.subtitle}>Select the type of goal you want to add</Text>
         </View>
 
         <View style={styles.illustrationContainer}>
@@ -39,20 +34,25 @@ export const GoalsIntroScreen = () => {
           Setting clear goals is the first step to financial success. Let's identify what matters most to you.
         </Text>
 
-        <Text style={styles.examplesTitle}>Common goals:</Text>
-        <View style={styles.goalsGrid}>
-          {exampleGoals.map((goal, index) => (
-            <Card key={index} style={styles.goalCard}>
-              <Text style={styles.goalText}>{goal}</Text>
-            </Card>
-          ))}
+        <View style={styles.goalTypeButtons}>
+          <Button
+            onPress={() => handleGoalTypeSelection('short-term')}
+            fullWidth
+            style={styles.goalTypeButton}
+          >
+            Short-term Goal
+          </Button>
+          <Button
+            onPress={() => handleGoalTypeSelection('long-term')}
+            fullWidth
+            style={styles.goalTypeButton}
+          >
+            Long-term Goal
+          </Button>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button onPress={() => navigation.navigate('GoalEntry')} fullWidth>
-          Add My First Goal
-        </Button>
         <Button onPress={() => navigation.navigate('RetirementAge')} variant="text" fullWidth>
           Skip for now
         </Button>
@@ -107,22 +107,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
-  examplesTitle: {
-    ...typography.h4,
-    marginBottom: spacing.md,
+  goalTypeButtons: {
+    gap: spacing.md,
+    marginTop: spacing.lg,
   },
-  goalsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  goalCard: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-  },
-  goalText: {
-    ...typography.body,
-    color: colors.text.primary,
+  goalTypeButton: {
+    marginBottom: 0,
   },
   footer: {
     padding: spacing.xl,

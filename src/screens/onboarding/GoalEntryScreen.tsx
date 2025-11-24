@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '@components/layout';
 import { Button, ProgressBar } from '@components/common';
 import { colors, typography, spacing } from '@theme';
 import { useUserStore } from '@store/userStore';
-import type { OnboardingStackNavigationProp } from '../../types/navigation';
+import type { OnboardingStackNavigationProp, OnboardingStackParamList } from '../../types/navigation';
+
+type GoalEntryScreenRouteProp = RouteProp<OnboardingStackParamList, 'GoalEntry'>;
 
 export const GoalEntryScreen = () => {
   const navigation = useNavigation<OnboardingStackNavigationProp>();
+  const route = useRoute<GoalEntryScreenRouteProp>();
   const addGoal = useUserStore(state => state.addGoal);
 
-  const [goalName, setGoalName] = useState('');
+  const goalType = route.params?.goalType || 'short-term';
+
+  const [selectedGoalOption, setSelectedGoalOption] = useState<string>('');
+  const [customGoalName, setCustomGoalName] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
   const [targetDate, setTargetDate] = useState('');
   const [monthlyContribution, setMonthlyContribution] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
 
   // Format date input to MM/YYYY
   const formatTargetDate = (text: string) => {
@@ -33,9 +38,20 @@ export const GoalEntryScreen = () => {
     }
   };
 
-  const categories = ['Emergency', 'Home', 'Retirement', 'Vacation', 'Education', 'Other'];
+  const goalOptions = ['Large purchase', 'Vacation', 'Wedding', 'Education', 'Down payment', 'Other'];
 
-  const isValid = goalName.trim().length > 0 && parseFloat(goalAmount) > 0;
+  console.log('GoalEntryScreen ALL 6 OPTIONS - goalType:', goalType, 'goalOptions:', goalOptions);
+
+  const getGoalName = () => {
+    if (selectedGoalOption === 'Other') {
+      return customGoalName;
+    }
+    return selectedGoalOption;
+  };
+
+  const isValid = selectedGoalOption.length > 0 &&
+                  (selectedGoalOption !== 'Other' || customGoalName.trim().length > 0) &&
+                  parseFloat(goalAmount) > 0;
 
   const handleSaveGoal = () => {
     if (!isValid) return;
@@ -44,26 +60,26 @@ export const GoalEntryScreen = () => {
     const goal = {
       id: Date.now().toString(),
       userId: 'temp-user-id', // Will be set when user is created
-      name: goalName,
+      name: getGoalName(),
       targetAmount: parseFloat(goalAmount),
       currentAmount: 0,
       monthlyContribution: parseFloat(monthlyContribution) || 0,
       targetDate: targetDate ? new Date(targetDate) : undefined,
       projectedCompletionDate: new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()),
       startDate: now,
-      category: (selectedCategory.toLowerCase() || 'other') as any,
+      category: selectedGoalOption.toLowerCase() as any,
       priority: 'medium' as const,
       status: 'active' as const,
       isOnTrack: true,
+      goalType: goalType,
       createdAt: now,
       updatedAt: now,
     };
 
     addGoal(goal);
 
-    // Ask if they want to add another goal
-    // For now, navigate to next screen
-    navigation.navigate('RetirementAge');
+    // Navigate to non-negotiable goal selection
+    navigation.navigate('NonNegotiableGoal');
   };
 
   const handleSkip = () => {
@@ -76,22 +92,52 @@ export const GoalEntryScreen = () => {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Add a Goal</Text>
+          <Text style={styles.title}>
+            {goalType === 'short-term' ? 'Short-term Goal' : 'Long-term Goal'}
+          </Text>
           <Text style={styles.subtitle}>What are you saving for?</Text>
         </View>
 
         <View style={styles.form}>
-          {/* Goal Name */}
+          {/* Goal Options */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>What's your goal?</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g., Emergency Fund"
-              value={goalName}
-              onChangeText={setGoalName}
-              maxLength={50}
-            />
+            <Text style={styles.label}>Select your goal (ALL 6 OPTIONS)</Text>
+            <View style={styles.categoriesContainer}>
+              {goalOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.categoryButton,
+                    selectedGoalOption === option && styles.categoryButtonSelected,
+                  ]}
+                  onPress={() => setSelectedGoalOption(option)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      selectedGoalOption === option && styles.categoryTextSelected,
+                    ]}
+                  >
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
+
+          {/* Custom Goal Name (if Other is selected) */}
+          {selectedGoalOption === 'Other' && (
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Goal Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your goal name"
+                value={customGoalName}
+                onChangeText={setCustomGoalName}
+                maxLength={50}
+              />
+            </View>
+          )}
 
           {/* Goal Amount */}
           <View style={styles.fieldContainer}>
@@ -133,32 +179,6 @@ export const GoalEntryScreen = () => {
                 onChangeText={setMonthlyContribution}
                 keyboardType="numeric"
               />
-            </View>
-          </View>
-
-          {/* Category */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Category</Text>
-            <View style={styles.categoriesContainer}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category}
-                  style={[
-                    styles.categoryButton,
-                    selectedCategory === category && styles.categoryButtonSelected,
-                  ]}
-                  onPress={() => setSelectedCategory(category)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      selectedCategory === category && styles.categoryTextSelected,
-                    ]}
-                  >
-                    {category}
-                  </Text>
-                </TouchableOpacity>
-              ))}
             </View>
           </View>
         </View>

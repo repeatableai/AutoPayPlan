@@ -7,6 +7,7 @@ import {
   FinancialIndicatorsIntroScreen,
   GoalsIntroScreen,
   GoalEntryScreen,
+  NonNegotiableGoalScreen,
   RetirementAgeScreen,
   EmergencyFundScreen,
   FinancialFearsScreen,
@@ -41,6 +42,7 @@ export const OnboardingNavigator = () => {
       <Stack.Screen name="FinancialIndicatorsIntro" component={FinancialIndicatorsIntroScreen} />
       <Stack.Screen name="GoalsIntro" component={GoalsIntroScreen} />
       <Stack.Screen name="GoalEntry" component={GoalEntryScreen} />
+      <Stack.Screen name="NonNegotiableGoal" component={NonNegotiableGoalScreen} />
       <Stack.Screen name="RetirementAge" component={RetirementAgeScreen} />
       <Stack.Screen name="EmergencyFund" component={EmergencyFundScreen} />
       <Stack.Screen name="FinancialFears" component={FinancialFearsScreen} />

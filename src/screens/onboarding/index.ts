@@ -20,3 +20,4 @@ export { ReviewSummaryScreen } from './ReviewSummaryScreen';
 export { EssentialBillsScreen } from './EssentialBillsScreen';
 export { LifestyleExtrasScreen } from './LifestyleExtrasScreen';
 export { ExpenseReductionScreen } from './ExpenseReductionScreen';
+export { NonNegotiableGoalScreen } from './NonNegotiableGoalScreen';
