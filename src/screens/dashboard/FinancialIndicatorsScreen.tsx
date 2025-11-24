@@ -145,14 +145,12 @@ export const FinancialIndicatorsScreen = () => {
         </Button>
 
         {/* Preview Mode Button */}
-        <Button
+        <TouchableOpacity
           onPress={() => console.log('Try preview mode')}
-          fullWidth
-          variant="secondary"
           style={styles.previewButton}
         >
-          Try preview mode
-        </Button>
+          <Text style={styles.previewButtonText}>Try preview mode</Text>
+        </TouchableOpacity>
 
         {/* Footnote */}
         <Text style={styles.footnote}>
@@ -283,10 +281,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#388307',
   },
   previewButton: {
+    marginTop: 16,
     marginBottom: 24,
     backgroundColor: colors.background.white,
     borderWidth: 2,
     borderColor: '#1A1A1A',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
   },
   footnote: {
     fontSize: 13,
