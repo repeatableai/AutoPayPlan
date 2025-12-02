@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { colors, typography, spacing } from '@theme';
+import { useCreditCardMinimum } from '@hooks/useFinancialCalculations';
 
 interface DebtCardProps {
   creditorName: string;
   balance: number;
   interestRate: number;
-  minimumPayment: number;
+  minimumPayment?: number; // Optional - will be calculated if not provided
   payoffMonthsWithoutPlan: number;
   payoffMonthsWithPlan: number;
 }
@@ -15,17 +16,28 @@ export const DebtCard: React.FC<DebtCardProps> = ({
   creditorName,
   balance,
   interestRate,
-  minimumPayment,
+  minimumPayment: providedMinPayment,
   payoffMonthsWithoutPlan,
   payoffMonthsWithPlan,
 }) => {
+  // Calculate real minimum payment using SQL function
+  const { minPayment: calculatedMinPayment, loading } = useCreditCardMinimum(balance, interestRate);
+  
+  // Use calculated minimum if provided minimum is not available
+  const minimumPayment = providedMinPayment ?? calculatedMinPayment ?? 0;
   return (
     <View style={styles.card}>
       <Text style={styles.creditor}>{creditorName}</Text>
       <Text style={styles.balance}>${balance.toLocaleString()}</Text>
-      <Text style={styles.details}>
-        {interestRate}% APR • ${minimumPayment}/mo minimum
-      </Text>
+      <View style={styles.detailsContainer}>
+        {loading ? (
+          <ActivityIndicator size="small" color={colors.text.secondary} />
+        ) : (
+          <Text style={styles.details}>
+            {interestRate}% APR • ${minimumPayment.toFixed(2)}/mo minimum
+          </Text>
+        )}
+      </View>
       <View style={styles.comparison}>
         <View>
           <Text style={styles.label}>Without Plan:</Text>
@@ -53,7 +65,10 @@ const styles = StyleSheet.create({
   },
   creditor: { ...typography.h4, marginBottom: spacing.xs },
   balance: { ...typography.h2, marginBottom: spacing.sm },
-  details: { ...typography.bodySmall, color: colors.text.secondary, marginBottom: spacing.md },
+  detailsContainer: {
+    marginBottom: spacing.md,
+  },
+  details: { ...typography.bodySmall, color: colors.text.secondary },
   comparison: {
     flexDirection: 'row',
     justifyContent: 'space-between',

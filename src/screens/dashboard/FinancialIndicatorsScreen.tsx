@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { DashboardStackParamList } from '@types/navigation';
 import { colors, spacing } from '@theme';
 import { Button } from '@components/common';
+import { useUserStore } from '@store/userStore';
+import { useFinancialCalculations } from '@hooks/useFinancialCalculations';
 
 type FinancialIndicatorsScreenNavigationProp = StackNavigationProp<DashboardStackParamList, 'FinancialIndicators'>;
 
 export const FinancialIndicatorsScreen = () => {
   const navigation = useNavigation<FinancialIndicatorsScreenNavigationProp>();
   const [showAll, setShowAll] = useState(false);
+  const profileId = useUserStore(state => state.profileId);
+  
+  // Get real financial calculations
+  const { dti, utilization, loading } = useFinancialCalculations({
+    profileId,
+    enabled: !!profileId,
+  });
 
   return (
     <View style={styles.container}>
@@ -91,7 +100,13 @@ export const FinancialIndicatorsScreen = () => {
                     <Text style={styles.targetValue}>≤ 30%</Text>
                   </View>
                 </View>
-                <Text style={styles.chevron}>∨</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color={colors.primary.blue} />
+                ) : (
+                  <Text style={styles.currentValue}>
+                    {utilization !== null ? `${utilization.toFixed(1)}%` : '--'}
+                  </Text>
+                )}
               </View>
 
               {/* Debt to Income (DTI) Row */}
@@ -106,7 +121,15 @@ export const FinancialIndicatorsScreen = () => {
                     <Text style={styles.targetValue}>≤ 36%</Text>
                   </View>
                 </View>
-                <Text style={styles.chevron}>∨</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color={colors.primary.blue} />
+                ) : (
+                  <Text style={styles.currentValue}>
+                    {dti !== null 
+                      ? (dti === 'Infinity' ? '∞' : `${dti.toFixed(1)}%`)
+                      : '--'}
+                  </Text>
+                )}
               </View>
 
               {/* Credit Score Row */}
@@ -263,6 +286,13 @@ const styles = StyleSheet.create({
   chevron: {
     fontSize: 16,
     color: '#666666',
+  },
+  currentValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    minWidth: 50,
+    textAlign: 'right',
   },
   showAllButton: {
     paddingVertical: 20,

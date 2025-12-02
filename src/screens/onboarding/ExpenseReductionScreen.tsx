@@ -58,10 +58,72 @@ export const ExpenseReductionScreen = () => {
     }
   };
 
-  const handleContinue = () => {
-    // Mark user as onboarded and navigate to main app
-    completeOnboarding();
-    navigation.navigate('Main', { screen: 'Dashboard' });
+  const handleContinue = async () => {
+    try {
+      // Sync onboarding data to Supabase
+      const store = useUserStore.getState();
+      
+      // Calculate totals from store (you'll need to aggregate from all onboarding screens)
+      // For now, using placeholder values - you'll need to collect these from the onboarding flow
+      const monthlyIncome = 3500; // TODO: Get from ReviewSummaryScreen
+      const needs = 3115; // TODO: Sum from EssentialBillsScreen
+      const wants = 1015; // TODO: Sum from LifestyleExtrasScreen
+      const currentSavings = store.emergencyFundTarget || 0; // TODO: Get from EmergencyFundScreen
+      // Helper function to calculate age
+      const calculateAge = (dateOfBirth: string | null): number => {
+        if (!dateOfBirth) return 35;
+        const birthDate = new Date(dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        return age;
+      };
+      
+      const currentAge = store.dateOfBirth ? calculateAge(store.dateOfBirth) : 35; // TODO: Calculate from DOB
+      const retirementAge = store.retirementAge || 65;
+      const primaryFear = store.financialFears[0] || 'none';
+      
+      // Import the sync function
+      const { syncOnboardingToSupabase } = await import('@services/supabase/onboardingService');
+      
+      // Sync to Supabase
+      const profileId = await syncOnboardingToSupabase({
+        monthlyIncome,
+        needs,
+        wants,
+        currentSavings,
+        currentAge,
+        retirementAge,
+        dateOfBirth: store.dateOfBirth,
+        creditScore: undefined, // TODO: Get from credit check
+        primaryFear,
+        financialFears: store.financialFears,
+        budgetPriorities: store.budgetPriorities,
+        debtPayoffPreference: store.debtPayoffPreference,
+        goals: store.goals.map(g => ({
+          name: g.name,
+          targetAmount: g.targetAmount,
+          deadlineMonths: g.deadlineMonths,
+          priority: g.priority as 'must_have' | 'want',
+        })),
+      });
+      
+      console.log('✅ Onboarding data synced to Supabase, profile ID:', profileId);
+      
+      // Mark user as onboarded
+      completeOnboarding();
+      
+      // Navigate to main app
+      navigation.navigate('Main', { screen: 'Dashboard' });
+    } catch (error) {
+      console.error('❌ Error syncing onboarding data:', error);
+      // Still mark as onboarded and navigate - user can retry later
+      completeOnboarding();
+      navigation.navigate('Main', { screen: 'Dashboard' });
+    }
   };
 
   return (

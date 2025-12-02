@@ -5,18 +5,18 @@ import { useNavigation } from '@react-navigation/native';
 import { Screen } from '@components/layout';
 import { Button } from '@components/common';
 import { colors, typography, spacing } from '@theme';
-import type { RootStackNavigationProp } from '../../types/navigation';
+import type { OnboardingStackNavigationProp } from '../../types/navigation';
 
 export const WelcomeScreen = () => {
-  const navigation = useNavigation<RootStackNavigationProp>();
+  const navigation = useNavigation<OnboardingStackNavigationProp>();
 
   const handleGetStarted = () => {
-    // Navigate to Main app, which will show DashboardWelcomeScreen (with piggy bank/car)
-    navigation.navigate('Main', { screen: 'Dashboard' });
+    // Navigate to Authentication screen
+    navigation.navigate('Authentication');
   };
 
   const handleSignIn = () => {
-    console.log('Sign in pressed - future feature');
+    navigation.navigate('SignIn');
   };
 
   return (

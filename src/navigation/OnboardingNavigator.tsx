@@ -3,6 +3,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import type { OnboardingStackParamList } from '../types/navigation';
 import {
   WelcomeScreen,
+  SignInScreen,
+  AuthenticationScreen,
   BenefitsScreen,
   FinancialIndicatorsIntroScreen,
   GoalsIntroScreen,
@@ -38,6 +40,8 @@ export const OnboardingNavigator = () => {
       }}
     >
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="SignIn" component={SignInScreen} />
+      <Stack.Screen name="Authentication" component={AuthenticationScreen} />
       <Stack.Screen name="Benefits" component={BenefitsScreen} />
       <Stack.Screen name="FinancialIndicatorsIntro" component={FinancialIndicatorsIntroScreen} />
       <Stack.Screen name="GoalsIntro" component={GoalsIntroScreen} />

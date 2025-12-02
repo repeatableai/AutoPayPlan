@@ -1,4 +1,6 @@
 export { WelcomeScreen } from './WelcomeScreen';
+export { SignInScreen } from './SignInScreen';
+export { AuthenticationScreen } from './AuthenticationScreen';
 export { BenefitsScreen } from './BenefitsScreen';
 export { FinancialIndicatorsIntroScreen } from './FinancialIndicatorsIntroScreen';
 export { GoalsIntroScreen } from './GoalsIntroScreen';

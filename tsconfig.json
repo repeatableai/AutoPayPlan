@@ -19,6 +19,7 @@
       "@services/*": ["src/services/*"],
       "@utils/*": ["src/utils/*"],
       "@types/*": ["src/types/*"],
+      "@hooks/*": ["src/hooks/*"],
       "@theme": ["src/theme"],
       "@theme/*": ["src/theme/*"],
       "@navigation/*": ["src/navigation/*"]

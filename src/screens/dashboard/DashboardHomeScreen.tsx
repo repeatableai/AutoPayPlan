@@ -1,21 +1,53 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@theme';
 import { useUserStore } from '@store/userStore';
+import { useFinancialCalculations } from '@hooks/useFinancialCalculations';
+import { getFinancialProfile } from '@services/supabase/profileService';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 export const DashboardHomeScreen = () => {
   const navigation = useNavigation();
   const resetOnboarding = useUserStore(state => state.resetOnboarding);
+  const profileId = useUserStore(state => state.profileId);
+  
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Use financial calculations hook
+  const { dti, utilization, emergencyTarget, loading: calcLoading } = useFinancialCalculations({
+    profileId,
+    enabled: !!profileId,
+  });
 
-  // These values would come from state/context in real app
-  // For now, using mock data based on onboarding inputs
-  const monthlyIncome = 3500; // Sum of all income sources
-  const needs = 3115; // Sum of essential bills (Housing 1600 + Utilities 225 + Transportation 500 + Groceries 250 + Healthcare 240 + Debt 300)
-  const wants = 1015; // Sum of lifestyle extras (Entertainment 200 + Personal Care 240 + Shopping 175 + Travel 340 + Gifts 60)
-  const totalSpent = needs + wants; // 4130
-  const remaining = monthlyIncome - totalSpent; // -630 (overspending in this case)
+  // Load profile data
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!profileId) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const profileData = await getFinancialProfile(profileId);
+        setProfile(profileData);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadProfile();
+  }, [profileId]);
+
+  // Use real data from profile or fallback to defaults
+  const monthlyIncome = profile?.income || 3500;
+  const needs = profile?.needs || 3115;
+  const wants = profile?.wants || 1015;
+  const totalSpent = needs + wants;
+  const remaining = monthlyIncome - totalSpent;
 
   const needsPercentage = (needs / monthlyIncome) * 100; // ~89%
   const wantsPercentage = (wants / monthlyIncome) * 100; // ~29%
@@ -164,8 +196,38 @@ export const DashboardHomeScreen = () => {
         </View>
       </View>
 
-      {/* Additional dashboard content would go here */}
-      {/* Financial indicators, goals summary, etc. */}
+      {/* Financial Indicators Summary */}
+      {profileId && (
+        <View style={styles.indicatorsCard}>
+          <Text style={styles.indicatorsTitle}>Financial Health</Text>
+          {calcLoading ? (
+            <ActivityIndicator size="small" color={colors.primary.blue} />
+          ) : (
+            <>
+              {dti !== null && (
+                <View style={styles.indicatorRow}>
+                  <Text style={styles.indicatorLabel}>Debt-to-Income:</Text>
+                  <Text style={styles.indicatorValue}>
+                    {dti === 'Infinity' ? '∞' : `${dti.toFixed(1)}%`}
+                  </Text>
+                </View>
+              )}
+              {utilization !== null && (
+                <View style={styles.indicatorRow}>
+                  <Text style={styles.indicatorLabel}>Credit Utilization:</Text>
+                  <Text style={styles.indicatorValue}>{utilization.toFixed(1)}%</Text>
+                </View>
+              )}
+              {emergencyTarget !== null && (
+                <View style={styles.indicatorRow}>
+                  <Text style={styles.indicatorLabel}>Emergency Fund Target:</Text>
+                  <Text style={styles.indicatorValue}>${emergencyTarget.toLocaleString()}</Text>
+                </View>
+              )}
+            </>
+          )}
+        </View>
+      )}
 
       {/* Debug: Reset Onboarding Button */}
       <TouchableOpacity
@@ -282,5 +344,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#666666',
+  },
+  indicatorsCard: {
+    backgroundColor: colors.background.white,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  indicatorsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2C2C2C',
+    marginBottom: 12,
+  },
+  indicatorRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  indicatorLabel: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  indicatorValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2C2C2C',
   },
 });

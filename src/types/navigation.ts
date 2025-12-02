@@ -11,6 +11,8 @@ export type RootStackParamList = {
 // Onboarding Stack Navigator
 export type OnboardingStackParamList = {
   Welcome: undefined;
+  SignIn: undefined;
+  Authentication: undefined;
   Benefits: undefined;
   FinancialIndicatorsIntro: undefined;
   GoalsIntro: undefined;

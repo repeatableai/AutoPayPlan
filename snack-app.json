@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "AutoPayPlan",
+    "slug": "autopayplan",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.autopayplan.app"
+    }
+  }
+}
+

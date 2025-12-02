@@ -3,15 +3,37 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 
 // Import the accelerate debt image
 const AccelerateDebtImage = require('../../assets/images/accelerate-debt.png');
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { MoreStackParamList } from '../../types/navigation';
 import { colors } from '@theme';
+import { useUserStore } from '@store/userStore';
 
 type MoreScreenNavigationProp = StackNavigationProp<MoreStackParamList, 'MoreHome'>;
 
 export const MoreScreen = () => {
   const navigation = useNavigation<MoreScreenNavigationProp>();
+  const signOut = useUserStore((state) => state.signOut);
+
+  const handleLogout = () => {
+    // Call signOut from the store
+    signOut();
+
+    // Navigate back to the Welcome screen by resetting the navigation stack
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Onboarding',
+            state: {
+              routes: [{ name: 'Welcome' }],
+            },
+          },
+        ],
+      })
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -58,7 +80,7 @@ export const MoreScreen = () => {
           <Text style={styles.menuItemArrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
           <Text style={styles.menuItemText}>Logout</Text>
           <Text style={styles.menuItemArrow}>›</Text>
         </TouchableOpacity>
